@@ -13,7 +13,7 @@
     "sources": "https://github.com/MrLetsplay2003/MrCore-Fabric"
   },
 
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/mrcore/icon.png",
 
   "environment": "*",
