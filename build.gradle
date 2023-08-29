@@ -81,10 +81,10 @@ publishing {
 		maven {
 			name = "maven"
 			credentials(PasswordCredentials) {
-				username project.property("MAVEN_USERNAME")
-				password project.property("MAVEN_PASSWORD")
+				username System.getenv("MAVEN_USERNAME")
+				password System.getenv("MAVEN_PASSWORD")
 			}
-			url = getProjectProperty("MAVEN_URL")
+			url = project.property("MAVEN_URL")
 		}
 	}
 }
