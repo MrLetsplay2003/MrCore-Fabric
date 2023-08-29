@@ -15,7 +15,7 @@ public class FabricCommandSender implements CommandSender {
 
 	@Override
 	public void sendMessage(String message) {
-		source.sendMessage(Text.of(message));
+		source.sendMessage(Text.literal(message));
 	}
 
 	public void sendMessage(Text message) {
