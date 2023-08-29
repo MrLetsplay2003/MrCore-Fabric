@@ -18,10 +18,12 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
 import me.mrletsplay.mrcore.command.AbstractCommand;
+import me.mrletsplay.mrcore.command.event.CommandInvokedEvent;
 import me.mrletsplay.mrcore.command.parser.CommandParser;
 import me.mrletsplay.mrcore.command.parser.CommandParsingException;
 import me.mrletsplay.mrcore.command.provider.CommandProvider;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -125,6 +127,20 @@ public abstract class FabricCommand extends AbstractCommand<FabricCommandPropert
 		return literal(getName())
 			.executes(this)
 			.then(argument("args", StringArgumentType.greedyString()).executes(this).suggests(this));
+	}
+
+	protected boolean isSenderPlayer(CommandInvokedEvent event) {
+		return event.getSender() instanceof FabricCommandSender
+				&& ((FabricCommandSender) event.getSender()).getSource().isExecutedByPlayer();
+	}
+
+	protected ServerPlayerEntity getSenderPlayer(CommandInvokedEvent event) {
+		return ((FabricCommandSender) event.getSender()).asPlayer();
+	}
+
+	protected boolean isSenderConsole(CommandInvokedEvent event) {
+		return event.getSender() instanceof FabricCommandSender
+				&& !((FabricCommandSender) event.getSender()).getSource().isExecutedByPlayer();
 	}
 
 }
