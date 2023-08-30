@@ -18,6 +18,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 
 import me.mrletsplay.mrcore.command.AbstractCommand;
+import me.mrletsplay.mrcore.command.CommandSender;
 import me.mrletsplay.mrcore.command.event.CommandInvokedEvent;
 import me.mrletsplay.mrcore.command.parser.CommandParser;
 import me.mrletsplay.mrcore.command.parser.CommandParsingException;
@@ -34,22 +35,6 @@ public abstract class FabricCommand extends AbstractCommand<FabricCommandPropert
 	public FabricCommand(String name, FabricCommandProperties initialProperties) {
 		super(name, initialProperties);
 		this.parser = new CommandParser(this);
-
-//		parser.getParsingProperties().setTabCompleteCommandFilter(event -> {
-//			return ((FabricCommand) event.getObject()).checkPermission(((FabricCommandSender) event.getSender()).getBukkitSender());
-//		});
-//
-//		parser.getParsingProperties().setTabCompleteOptionFilter(event -> {
-//			return ((FabricCommand) event.getCommand()).checkPermission(((FabricCommandSender) event.getSender()).getBukkitSender());
-//		});
-//
-//		parser.getParsingProperties().setTabCompleteArgumentFilter(event -> {
-//			return ((FabricCommand) event.getCommand()).checkPermission(((FabricCommandSender) event.getSender()).getBukkitSender());
-//		});
-//
-//		parser.getParsingProperties().setTabCompleteOptionArgumentFilter(event -> {
-//			return ((FabricCommand) event.getCommand()).checkPermission(((FabricCommandSender) event.getSender()).getBukkitSender());
-//		});
 	}
 
 	public FabricCommand(String name) {
@@ -71,7 +56,7 @@ public abstract class FabricCommand extends AbstractCommand<FabricCommandPropert
 		try {
 			invoke(new FabricCommandSender(context.getSource()), context.getInput());
 		}catch(CommandParsingException e) {
-			e.printStackTrace(); // TODO
+			context.getSource().sendMessage(Text.literal("§cError: §7" + e.getMessage()));
 		}
 		return 1;
 	}
@@ -87,7 +72,7 @@ public abstract class FabricCommand extends AbstractCommand<FabricCommandPropert
 	}
 
 	@Override
-	public void sendCommandInfo(me.mrletsplay.mrcore.command.CommandSender sender) {
+	public void sendCommandInfo(CommandSender sender) {
 		FabricCommandSender s = (FabricCommandSender) sender;
 
 		s.sendMessage(Text.literal("Command: ").formatted(Formatting.GOLD)
@@ -125,8 +110,12 @@ public abstract class FabricCommand extends AbstractCommand<FabricCommandPropert
 
 	public LiteralArgumentBuilder<ServerCommandSource> create() {
 		return literal(getName())
+			.requires(getProperties().getRequires())
 			.executes(this)
-			.then(argument("args", StringArgumentType.greedyString()).executes(this).suggests(this));
+			.then(argument("args", StringArgumentType.greedyString())
+				.requires(getProperties().getRequires())
+				.executes(this)
+				.suggests(this));
 	}
 
 	protected boolean isSenderPlayer(CommandInvokedEvent event) {

@@ -32,8 +32,8 @@ dependencies {
 
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 	
-	implementation "me.mrletsplay:MrCore:4.3-SNAPSHOT"
-	include "me.mrletsplay:MrCore:4.3-SNAPSHOT"
+	implementation "me.mrletsplay:MrCore:4.3"
+	include "me.mrletsplay:MrCore:4.3"
 }
 
 base {
