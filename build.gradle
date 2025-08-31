@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.10-SNAPSHOT'
+	id 'fabric-loom' version "${loom_version}"
 	id 'maven-publish'
 }
 
@@ -32,8 +32,8 @@ dependencies {
 
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 	
-	implementation "me.mrletsplay:MrCore:4.4-SNAPSHOT"
-	include "me.mrletsplay:MrCore:4.4-SNAPSHOT"
+	implementation "me.mrletsplay:MrCore:4.6.1"
+	include "me.mrletsplay:MrCore:4.6.1"
 }
 
 base {
