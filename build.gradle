@@ -84,7 +84,7 @@ publishing {
 				username System.getenv("MAVEN_USERNAME")
 				password System.getenv("MAVEN_PASSWORD")
 			}
-			url = project.property("MAVEN_URL")
+			url = project.hasProperty("MAVEN_URL") ? project.property("MAVEN_URL") : ""
 		}
 	}
 }
