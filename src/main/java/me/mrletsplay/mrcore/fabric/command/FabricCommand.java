@@ -1,8 +1,5 @@
 package me.mrletsplay.mrcore.fabric.command;
 
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -23,12 +20,13 @@ import me.mrletsplay.mrcore.command.event.CommandInvokedEvent;
 import me.mrletsplay.mrcore.command.parser.CommandParser;
 import me.mrletsplay.mrcore.command.parser.CommandParsingException;
 import me.mrletsplay.mrcore.command.provider.CommandProvider;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 
-public abstract class FabricCommand extends AbstractCommand<FabricCommandProperties> implements CommandProvider, Command<ServerCommandSource>, SuggestionProvider<ServerCommandSource> {
+public abstract class FabricCommand extends AbstractCommand<FabricCommandProperties> implements CommandProvider, Command<CommandSourceStack>, SuggestionProvider<CommandSourceStack> {
 
 	private CommandParser parser;
 
@@ -52,17 +50,17 @@ public abstract class FabricCommand extends AbstractCommand<FabricCommandPropert
 	}
 
 	@Override
-	public int run(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+	public int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
 		try {
 			invoke(new FabricCommandSender(context.getSource()), context.getInput());
 		}catch(CommandParsingException e) {
-			context.getSource().sendMessage(Text.literal("§cError: §7" + e.getMessage()));
+			context.getSource().sendSystemMessage(Component.literal("§cError: §7" + e.getMessage()));
 		}
 		return 1;
 	}
 
 	@Override
-	public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) throws CommandSyntaxException {
+	public CompletableFuture<Suggestions> getSuggestions(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) throws CommandSyntaxException {
 		List<String> suggestions = tabComplete(new FabricCommandSender(context.getSource()), context.getInput().substring(1));
 
 		builder = builder.createOffset(builder.getInput().length());
@@ -75,32 +73,32 @@ public abstract class FabricCommand extends AbstractCommand<FabricCommandPropert
 	public void sendCommandInfo(CommandSender sender) {
 		FabricCommandSender s = (FabricCommandSender) sender;
 
-		s.sendMessage(Text.literal("Command: ").formatted(Formatting.GOLD)
-			.append(Text.literal(getFullName()).formatted(Formatting.WHITE)));
+		s.sendMessage(Component.literal("Command: ").withStyle(ChatFormatting.GOLD)
+			.append(Component.literal(getFullName()).withStyle(ChatFormatting.WHITE)));
 
 		if(getDescription() != null) {
-			s.sendMessage(Text.literal("Description: ").formatted(Formatting.GOLD)
-				.append(Text.literal(getDescription()).formatted(Formatting.WHITE)));
+			s.sendMessage(Component.literal("Description: ").withStyle(ChatFormatting.GOLD)
+				.append(Component.literal(getDescription()).withStyle(ChatFormatting.WHITE)));
 		}
 
 		if(!getOptions().isEmpty()) {
-			s.sendMessage(Text.literal("Available options: ").formatted(Formatting.GOLD)
-				.append(Text.literal(getOptions().stream().map(o -> "--" + o.getLongName()).collect(Collectors.joining(", "))).formatted(Formatting.WHITE)));
+			s.sendMessage(Component.literal("Available options: ").withStyle(ChatFormatting.GOLD)
+				.append(Component.literal(getOptions().stream().map(o -> "--" + o.getLongName()).collect(Collectors.joining(", "))).withStyle(ChatFormatting.WHITE)));
 		}
 
 		if(getUsage() != null) {
-			s.sendMessage(Text.literal("Usage: ").formatted(Formatting.GOLD)
-				.append(Text.literal(getUsage()).formatted(Formatting.WHITE)));
+			s.sendMessage(Component.literal("Usage: ").withStyle(ChatFormatting.GOLD)
+				.append(Component.literal(getUsage()).withStyle(ChatFormatting.WHITE)));
 		}
 
 		if(!getSubCommands().isEmpty()) {
-			s.sendMessage(Text.literal(""));
-			s.sendMessage(Text.literal("Sub commands: ").formatted(Formatting.GOLD));
+			s.sendMessage(Component.literal(""));
+			s.sendMessage(Component.literal("Sub commands: ").withStyle(ChatFormatting.GOLD));
 			for(me.mrletsplay.mrcore.command.Command sub : getSubCommands()) {
-				var subT = Text.literal(sub.getUsage() == null ? "/" + sub.getFullName() : sub.getUsage()).formatted(Formatting.GRAY);
+				var subT = Component.literal(sub.getUsage() == null ? "/" + sub.getFullName() : sub.getUsage()).withStyle(ChatFormatting.GRAY);
 				if(sub.getDescription() != null) {
-					subT = subT.append(Text.literal(" - ").formatted(Formatting.DARK_GRAY))
-						.append(Text.literal(sub.getDescription()).formatted(Formatting.WHITE));
+					subT = subT.append(Component.literal(" - ").withStyle(ChatFormatting.DARK_GRAY))
+						.append(Component.literal(sub.getDescription()).withStyle(ChatFormatting.WHITE));
 				}
 
 				s.sendMessage(subT);
@@ -108,11 +106,11 @@ public abstract class FabricCommand extends AbstractCommand<FabricCommandPropert
 		}
 	}
 
-	public LiteralArgumentBuilder<ServerCommandSource> create() {
-		return literal(getName())
+	public LiteralArgumentBuilder<CommandSourceStack> create() {
+		return Commands.literal(getName())
 			.requires(getProperties().getRequires())
 			.executes(this)
-			.then(argument("args", StringArgumentType.greedyString())
+			.then(Commands.argument("args", StringArgumentType.greedyString())
 				.requires(getProperties().getRequires())
 				.executes(this)
 				.suggests(this));
@@ -120,16 +118,16 @@ public abstract class FabricCommand extends AbstractCommand<FabricCommandPropert
 
 	protected boolean isSenderPlayer(CommandInvokedEvent event) {
 		return event.getSender() instanceof FabricCommandSender
-				&& ((FabricCommandSender) event.getSender()).getSource().isExecutedByPlayer();
+				&& ((FabricCommandSender) event.getSender()).getSource().isPlayer();
 	}
 
-	protected ServerPlayerEntity getSenderPlayer(CommandInvokedEvent event) {
+	protected ServerPlayer getSenderPlayer(CommandInvokedEvent event) {
 		return ((FabricCommandSender) event.getSender()).asPlayer();
 	}
 
 	protected boolean isSenderConsole(CommandInvokedEvent event) {
 		return event.getSender() instanceof FabricCommandSender
-				&& !((FabricCommandSender) event.getSender()).getSource().isExecutedByPlayer();
+				&& !((FabricCommandSender) event.getSender()).getSource().isPlayer();
 	}
 
 }

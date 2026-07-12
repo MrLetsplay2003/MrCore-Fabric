@@ -3,21 +3,21 @@ package me.mrletsplay.mrcore.fabric.command;
 import java.util.function.Predicate;
 
 import me.mrletsplay.mrcore.command.properties.CommandProperties;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
 
 public class FabricCommandProperties implements CommandProperties {
 
-	private Predicate<ServerCommandSource> requires;
+	private Predicate<CommandSourceStack> requires;
 
 	public FabricCommandProperties() {
-		this.requires = s -> true;
+		this.requires = _ -> true;
 	}
 
-	public void setRequires(Predicate<ServerCommandSource> requires) {
+	public void setRequires(Predicate<CommandSourceStack> requires) {
 		this.requires = requires;
 	}
 
-	public Predicate<ServerCommandSource> getRequires() {
+	public Predicate<CommandSourceStack> getRequires() {
 		return requires;
 	}
 
